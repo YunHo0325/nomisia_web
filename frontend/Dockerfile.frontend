@@ -1,0 +1,23 @@
+# Step 1: Base image
+FROM node:18-alpine AS builder
+WORKDIR /app
+
+# Step 2: Copy package files and install dependencies
+COPY package.json package-lock.json ./
+RUN npm install react@18 react-dom@18 --legacy-peer-deps
+RUN npm install --legacy-peer-deps
+
+# Step 3: Copy source code and build the application
+COPY . ./
+RUN npm run build
+
+# Step 4: Production image
+FROM node:18-alpine
+WORKDIR /app
+
+# Step 5: Copy built files from the builder stage
+COPY --from=builder /app /app
+
+# Step 6: Expose port and start the production server
+EXPOSE 3000
+CMD ["npm", "run", "start"]
